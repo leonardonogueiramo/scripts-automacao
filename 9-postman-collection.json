@@ -1,0 +1,251 @@
+{
+	"info": {
+		"_postman_id": "7890abcd-1234-5678-90ab-1234567890ab",
+		"name": "API Operadoras ANS",
+		"description": "Coleção para testar a API de consulta de operadoras da ANS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Status da API",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/status",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"status"
+					]
+				},
+				"description": "Verifica o status da API e se os dados foram carregados."
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar Operadoras por Termo",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/operadoras/busca?termo=amil&limite=10",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"operadoras",
+						"busca"
+					],
+					"query": [
+						{
+							"key": "termo",
+							"value": "amil",
+							"description": "Termo de busca (obrigatório)"
+						},
+						{
+							"key": "limite",
+							"value": "10",
+							"description": "Limite de resultados (opcional, padrão 10)"
+						}
+					]
+				},
+				"description": "Busca operadoras por termo (nome, CNPJ, registro ANS, etc.)"
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar por Nome Completo",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/operadoras/busca?termo=unimed&limite=5",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"operadoras",
+						"busca"
+					],
+					"query": [
+						{
+							"key": "termo",
+							"value": "unimed",
+							"description": "Busca por operadoras Unimed"
+						},
+						{
+							"key": "limite",
+							"value": "5",
+							"description": "Limita a 5 resultados"
+						}
+					]
+				},
+				"description": "Busca operadoras pelo nome Unimed"
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar por Registro ANS",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/operadoras/busca?termo=335100",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"operadoras",
+						"busca"
+					],
+					"query": [
+						{
+							"key": "termo",
+							"value": "335100",
+							"description": "Busca por número de registro ANS"
+						}
+					]
+				},
+				"description": "Busca operadora específica pelo número de registro ANS"
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar por CNPJ (parcial)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/operadoras/busca?termo=02904",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"operadoras",
+						"busca"
+					],
+					"query": [
+						{
+							"key": "termo",
+							"value": "02904",
+							"description": "Parte do CNPJ para busca"
+						}
+					]
+				},
+				"description": "Busca operadoras que possuem a sequência 02904 no CNPJ"
+			},
+			"response": []
+		},
+		{
+			"name": "Detalhes da Operadora",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/operadoras/detalhes/335100",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"operadoras",
+						"detalhes",
+						"335100"
+					]
+				},
+				"description": "Obtém detalhes completos de uma operadora específica pelo número de registro ANS"
+			},
+			"response": []
+		},
+		{
+			"name": "Listar Modalidades",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/operadoras/modalidades",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"operadoras",
+						"modalidades"
+					]
+				},
+				"description": "Lista todas as modalidades disponíveis e a quantidade de operadoras por modalidade"
+			},
+			"response": []
+		},
+		{
+			"name": "Busca com Erro (sem termo)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/operadoras/busca",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"operadoras",
+						"busca"
+					]
+				},
+				"description": "Teste de busca sem fornecer o parâmetro de termo obrigatório"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5000/api",
+			"type": "string"
+		}
+	]
+}

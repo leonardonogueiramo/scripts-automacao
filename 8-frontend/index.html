@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Consulta de Operadoras ANS</title>
+	<!-- Importação do Vue.js -->
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+	<!-- Importação do Axios para requisições HTTP -->
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	<!-- Bootstrap CSS -->
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<!-- CSS personalizado -->
+	<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+	<div id="app" class="container">
+		<header class="my-4">
+			<h1 class="text-center">Consulta de Operadoras ANS</h1>
+			<p class="text-center text-muted">Sistema de consulta de operadoras de planos de saúde cadastradas na ANS</p>
+		</header>
+
+		<div class="row mb-4">
+			<div class="col-md-8 offset-md-2">
+				<div class="card">
+					<div class="card-body">
+						<div class="input-group mb-3">
+							<input 
+								type="text" 
+								class="form-control" 
+								placeholder="Digite o nome, CNPJ ou registro ANS da operadora" 
+								v-model="termoBusca"
+								@keyup.enter="buscarOperadoras"
+							>
+							<button 
+								class="btn btn-primary" 
+								@click="buscarOperadoras"
+								:disabled="carregando"
+							>
+								<span v-if="carregando" class="spinner-border spinner-border-sm" role="status"></span>
+								Buscar
+							</button>
+						</div>
+						
+						<div class="d-flex justify-content-between align-items-center mb-2">
+							<div>
+								<label for="limite" class="form-label me-2">Resultados por página:</label>
+								<select id="limite" class="form-select-sm" v-model.number="limite">
+									<option value="5">5</option>
+									<option value="10">10</option>
+									<option value="20">20</option>
+									<option value="50">50</option>
+								</select>
+							</div>
+							<div v-if="totalResultados > 0" class="text-muted">
+								Encontrados {{ totalResultados }} resultados
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Lista de resultados -->
+		<div class="row">
+			<div class="col-md-10 offset-md-1">
+				<!-- Mensagem de erro -->
+				<div v-if="erro" class="alert alert-danger" role="alert">
+					{{ erro }}
+				</div>
+				
+				<!-- Tabela de resultados -->
+				<div v-if="resultados.length > 0" class="card">
+					<div class="table-responsive">
+						<table class="table table-hover">
+							<thead class="table-light">
+								<tr>
+									<th>Registro ANS</th>
+									<th>Razão Social</th>
+									<th>Nome Fantasia</th>
+									<th>Modalidade</th>
+									<th>UF</th>
+									<th>Ações</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for="operadora in resultados" :key="operadora.registro_ans">
+									<td>{{ operadora.registro_ans }}</td>
+									<td>{{ operadora.razao_social }}</td>
+									<td>{{ operadora.nome_fantasia || '-' }}</td>
+									<td>{{ operadora.modalidade }}</td>
+									<td>{{ operadora.uf }}</td>
+									<td>
+										<button 
+											class="btn btn-sm btn-outline-primary"
+											@click="exibirDetalhes(operadora)"
+										>
+											Detalhes
+										</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				
+				<!-- Mensagem quando não há resultados -->
+				<div v-else-if="buscaRealizada && !carregando" class="alert alert-info" role="alert">
+					Nenhuma operadora encontrada para o termo "{{ termoBusca }}".
+				</div>
+			</div>
+		</div>
+
+		<!-- Modal de detalhes da operadora -->
+		<div class="modal fade" id="detalhesModal" tabindex="-1" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Detalhes da Operadora</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+					</div>
+					<div class="modal-body" v-if="operadoraSelecionada">
+						<div class="row">
+							<div class="col-md-6">
+								<h6>Informações Gerais</h6>
+								<p><strong>Registro ANS:</strong> {{ operadoraSelecionada.registro_ans }}</p>
+								<p><strong>CNPJ:</strong> {{ operadoraSelecionada.cnpj }}</p>
+								<p><strong>Razão Social:</strong> {{ operadoraSelecionada.razao_social }}</p>
+								<p><strong>Nome Fantasia:</strong> {{ operadoraSelecionada.nome_fantasia || '-' }}</p>
+								<p><strong>Modalidade:</strong> {{ operadoraSelecionada.modalidade }}</p>
+								<p><strong>Data Registro ANS:</strong> {{ operadoraSelecionada.data_registro }}</p>
+							</div>
+							<div class="col-md-6">
+								<h6>Endereço e Contato</h6>
+								<p><strong>Logradouro:</strong> {{ operadoraSelecionada.logradouro }}, {{ operadoraSelecionada.numero }}</p>
+								<p><strong>Complemento:</strong> {{ operadoraSelecionada.complemento || '-' }}</p>
+								<p><strong>Bairro:</strong> {{ operadoraSelecionada.bairro }}</p>
+								<p><strong>Cidade/UF:</strong> {{ operadoraSelecionada.cidade }}/{{ operadoraSelecionada.uf }}</p>
+								<p><strong>CEP:</strong> {{ operadoraSelecionada.cep }}</p>
+								<p><strong>Telefone:</strong> ({{ operadoraSelecionada.ddd }}) {{ operadoraSelecionada.telefone }}</p>
+								<p><strong>E-mail:</strong> {{ operadoraSelecionada.email || '-' }}</p>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<footer class="mt-5 mb-3 text-center text-muted">
+			<p>Desenvolvido para o teste técnico ANS - {{ anoAtual }}</p>
+		</footer>
+	</div>
+
+	<!-- Bootstrap JS Bundle with Popper -->
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	<!-- Script da aplicação Vue -->
+	<script src="app.js"></script>
+</body>
+</html>

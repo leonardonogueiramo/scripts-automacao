@@ -1,90 +1,132 @@
-# Webscraping ANS - Download de Anexos
+# Scripts Automação ANS
 
-Este projeto realiza webscraping no site da Agência Nacional de Saúde Suplementar (ANS) para automatizar o download dos Anexos I e II em formato PDF e compactá-los em um único arquivo.
+Este projeto contém a implementação de quatro etapas de uma automação:
 
-## Funcionalidades
+1. Web Scraping
+2. Transformação de Dados
+3. Banco de Dados
+4. API
 
-- Acessa o site da ANS: [Atualização do Rol de Procedimentos](https://www.gov.br/ans/pt-br/acesso-a-informacao/participacao-da-sociedade/atualizacao-do-rol-de-procedimentos)
-- Localiza e baixa os Anexos I e II em formato PDF
-- Compacta todos os anexos em um único arquivo ZIP
-- Salva o HTML da página para análise e depuração
+## Arquivos do Projeto
+
+- `1-webscraping_ans.py`: Script de web scraping para baixar anexos do site da ANS
+- `2-transformacao-de-dados.py`: Script para extrair e transformar dados do PDF
+- `3-download-ans-data.py`: Script para baixar dados de operadoras e demonstrações contábeis da ANS
+- `4-create-tables-mysql.sql`: Script SQL para criar as tabelas no MySQL
+- `5-import-data-mysql.sql`: Script SQL para importar os dados para o MySQL
+- `6-analytical-queries.sql`: Consultas analíticas para responder as perguntas do teste
+- `7-api-server.py`: Servidor API em Flask para consultas de operadoras
+- `8-frontend/`: Pasta contendo a interface web em Vue.js
+- `9-postman-collection.json`: Coleção Postman para testar a API
 
 ## Requisitos
 
-- Python 3.6 ou superior
-- Bibliotecas:
-  - requests
-  - beautifulsoup4
-  - zipfile (biblioteca padrão)
-  - re (biblioteca padrão)
-  - urllib (biblioteca padrão)
-
-## Instalação
-
-1. Clone este repositório:
+### Python
+- Python 3.8+
+- Bibliotecas: requests, beautifulsoup4, zipfile, re, pandas, pdfplumber, flask, flask-cors, tqdm
+  
+Para instalar as dependências Python:
 ```bash
-git clone https://github.com/leonardonogueiramo/web-scraping-download-anexo-python.git
-cd webscraping-ans
+pip requests beautifulsoup4 pandas pdfplumber flask flask-cors tqdm lxml
 ```
 
-2. Instale as dependências:
-```bash
-pip install -r requirements.txt
-```
+### Banco de Dados
+- MySQL 8.0 ou PostgreSQL 10.0+
 
-Ou instale manualmente:
-```bash
-pip install requests beautifulsoup4
-```
+### Frontend
+- Navegador web moderno
 
-## Uso
+## Instruções de Execução
 
-Execute o script principal:
+### 1. Web Scraping
+
+Execute o script para baixar os anexos do site da ANS:
 
 ```bash
-python webscraping_ans.py
+python 1-webscraping_ans.py
 ```
 
-Os arquivos serão baixados para a pasta `downloads_ans` e compactados em `downloads_ans/anexos_ans.zip`.
+Isto irá:
+- Acessar o site da ANS
+- Baixar os Anexos I e II em formato PDF
+- Compactar os anexos em um arquivo ZIP
+
+### 2. Transformação de Dados
+
+Execute o script para processar o PDF baixado:
+
+```bash
+python 2-transformacao-de-dados.py
+```
+
+Isto irá:
+- Extrair os dados da tabela do Rol de Procedimentos do PDF
+- Salvar os dados em formato CSV
+- Substituir as abreviações por descrições completas
+- Compactar o CSV em um arquivo ZIP
+
+### 3. Banco de Dados
+
+1. Primeiro, baixe os dados das demonstrações contábeis e operadoras:
+
+```bash
+python 3-download-ans-data.py
+```
+
+2. Crie as tabelas no banco de dados:
+
+```bash
+mysql -u seu_usuario -p < 4-create-tables-mysql.sql
+```
+
+3. Ajuste o caminho dos arquivos no script `5-import-data-mysql.sql` e importe os dados:
+
+```bash
+mysql -u seu_usuario -p < 5-import-data-mysql.sql
+```
+
+4. Execute as consultas analíticas:
+
+```bash
+mysql -u seu_usuario -p < 6-analytical-queries.sql
+```
+
+### 4. API
+
+1. Execute o servidor API:
+
+```bash
+python 7-api-server.py
+```
+
+2. Abra o arquivo `8-frontend/index.html` em seu navegador.
+
+3. Importe a coleção `9-postman-collection.json` no Postman para testar a API.
 
 ## Estrutura do Projeto
 
 ```
-webscraping-ans/
-│
-├── webscraping_ans.py     # Script principal
-├── downloads_ans/         # Pasta onde os anexos são salvos
-├── pagina_ans.html        # HTML da página para debug
-├── requirements.txt       # Dependências do projeto
-└── README.md              # Este arquivo
+projeto/
+├── downloads_ans/       # Diretório para os arquivos baixados da ANS
+├── dados_ans/           # Diretório para os dados das operadoras e demonstrações
+│   ├── operadoras_ativas/
+│   └── demonstracoes_contabeis/
+├── 1-webscraping_ans.py
+├── 2-transformacao-de-dados.py
+├── 3-download-ans-data.py
+├── 4-create-tables-mysql.sql
+├── 5-import-data-mysql.sql
+├── 6-analytical-queries.sql
+├── 7-api-server.py
+├── 8-frontend/
+│   ├── index.html
+│   ├── styles.css
+│   └── app.js
+└── 9-postman-collection.json
 ```
 
-## Como Funciona
+## Observações
 
-1. O script faz uma requisição HTTP ao site da ANS
-2. Analisa o HTML da página usando BeautifulSoup 
-3. Busca links que contenham referências aos Anexos I e II
-4. Baixa os arquivos PDF encontrados
-5. Compacta os arquivos em um único ZIP
-
-## Resolução de Problemas
-
-Se o script não encontrar os anexos, algumas possíveis causas são:
-
-- Alterações na estrutura do site da ANS
-- Bloqueio de requisições automatizadas
-- Carregamento dinâmico de conteúdo via JavaScript
-
-Em caso de problemas, verifique o arquivo `pagina_ans.html` gerado para entender a estrutura atual da página.
-
-## Contribuições
-
-Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou enviar pull requests com melhorias.
-
-## Licença
-
-Este projeto está licenciado sob a [MIT License](LICENSE).
-
-## Aviso Legal
-
-Este projeto foi criado apenas para fins educacionais e de automação de tarefas. Certifique-se de respeitar os termos de uso do site da ANS ao utilizar este script.
+- Certifique-se de ajustar os caminhos dos arquivos nos scripts SQL conforme necessário
+- O servidor API está configurado para rodar na porta 5000, verifique se essa porta está disponível
+- Para o frontend acessar a API, você precisa ter o servidor rodando localmente
