@@ -84,7 +84,7 @@ if __name__ == "__main__":
 	# Configurações do banco de dados
 	host = "localhost"
 	usuario = "root"
-	senha = "938612ot"  # Substitua pela sua senha real
+	senha = ""  # Substitua pela sua senha real
 	database = "ans_database"
 
 	# Arquivos SQL a serem executados
