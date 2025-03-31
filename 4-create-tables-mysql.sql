@@ -34,9 +34,9 @@ CREATE TABLE IF NOT EXISTS operadoras (
 );
 
 -- Criar índices para melhorar a performance de consultas frequentes
-CREATE INDEX idx_operadoras_razao_social ON operadoras(razao_social);
-CREATE INDEX idx_operadoras_modalidade ON operadoras(modalidade);
-CREATE INDEX idx_operadoras_uf ON operadoras(uf);
+CREATE INDEX IF NOT EXISTS idx_operadoras_razao_social ON operadoras(razao_social);
+CREATE INDEX IF NOT EXISTS idx_operadoras_modalidade ON operadoras(modalidade);
+CREATE INDEX IF NOT EXISTS idx_operadoras_uf ON operadoras(uf);
 
 -- Tabela de Demonstrações Contábeis
 -- Esta é uma estrutura base que pode precisar de ajustes conforme a estrutura exata dos arquivos
@@ -54,9 +54,9 @@ CREATE TABLE IF NOT EXISTS demonstracoes_contabeis (
 );
 
 -- Criar índices para a tabela de demonstrações
-CREATE INDEX idx_demonstracoes_registro_ans ON demonstracoes_contabeis(registro_ans);
-CREATE INDEX idx_demonstracoes_data_base ON demonstracoes_contabeis(data_base);
-CREATE INDEX idx_demonstracoes_ano_trimestre ON demonstracoes_contabeis(ano, trimestre);
+CREATE INDEX IF NOT EXISTS idx_demonstracoes_registro_ans ON demonstracoes_contabeis(registro_ans);
+CREATE INDEX IF NOT EXISTS idx_demonstracoes_data_base ON demonstracoes_contabeis(data_base);
+CREATE INDEX IF NOT EXISTS idx_demonstracoes_ano_trimestre ON demonstracoes_contabeis(ano, trimestre);
 
 -- Tabela para monitorar os arquivos importados
 CREATE TABLE IF NOT EXISTS arquivos_importados (
@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS arquivos_importados (
 -- FLUSH PRIVILEGES;
 
 -- Procedimento para limpar dados e reiniciar importação, se necessário
+DROP PROCEDURE IF EXISTS limpar_dados; -- Adicionado para evitar erro se já existir
 DELIMITER //
 CREATE PROCEDURE limpar_dados()
 BEGIN

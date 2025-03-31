@@ -27,7 +27,7 @@ Este projeto contém a implementação de quatro etapas de uma automação:
   
 Para instalar as dependências Python:
 ```bash
-pip requests beautifulsoup4 pandas pdfplumber flask flask-cors tqdm lxml
+pip install requests beautifulsoup4 pandas pdfplumber flask flask-cors tqdm lxml mysql-connector-python
 ```
 
 ### Banco de Dados
@@ -73,22 +73,10 @@ Isto irá:
 python 3-download-ans-data.py
 ```
 
-2. Crie as tabelas no banco de dados:
+2. Execute o script que cria o banco de dados e importa as informações:
 
 ```bash
-mysql -u seu_usuario -p < 4-create-tables-mysql.sql
-```
-
-3. Ajuste o caminho dos arquivos no script `5-import-data-mysql.sql` e importe os dados:
-
-```bash
-mysql -u seu_usuario -p < 5-import-data-mysql.sql
-```
-
-4. Execute as consultas analíticas:
-
-```bash
-mysql -u seu_usuario -p < 6-analytical-queries.sql
+python 7-execute-scripts-database.py
 ```
 
 ### 4. API
@@ -96,12 +84,12 @@ mysql -u seu_usuario -p < 6-analytical-queries.sql
 1. Execute o servidor API:
 
 ```bash
-python 7-api-server.py
+python 8-api-server.py
 ```
 
-2. Abra o arquivo `8-frontend/index.html` em seu navegador.
+2. Abra o arquivo `9-frontend/index.html` em seu navegador.
 
-3. Importe a coleção `9-postman-collection.json` no Postman para testar a API.
+3. Importe a coleção `10-postman-collection.json` no Postman para testar a API.
 
 ## Estrutura do Projeto
 
@@ -117,12 +105,13 @@ projeto/
 ├── 4-create-tables-mysql.sql
 ├── 5-import-data-mysql.sql
 ├── 6-analytical-queries.sql
-├── 7-api-server.py
-├── 8-frontend/
+├── 7-execute-scripts-database.py
+├── 8-api-server.py
+├── 9-frontend/
 │   ├── index.html
 │   ├── styles.css
 │   └── app.js
-└── 9-postman-collection.json
+└── 10-postman-collection.json
 ```
 
 ## Observações

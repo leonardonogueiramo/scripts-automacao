@@ -11,7 +11,7 @@ CREATE TABLE temp_operadoras LIKE operadoras;
 
 -- Carregar dados do CSV para a tabela temporária
 -- Nota: Ajuste o caminho do arquivo conforme necessário
-LOAD DATA INFILE '/caminho/para/dados_ans/operadoras_ativas/operadoras_ativas.csv'
+LOAD DATA INFILE 'D:/Documentos/TestesLeo/scripts-automacao/dados_ans/operadoras_ativas/operadoras_ativas.csv'
 INTO TABLE temp_operadoras
 FIELDS TERMINATED BY ';' 
 ENCLOSED BY '"'
@@ -85,8 +85,9 @@ DROP TABLE temp_operadoras;
 
 -- Procedimento para processamento de arquivos de demonstrações contábeis
 -- Este procedimento deve ser executado para cada arquivo CSV de demonstrações contábeis
+DROP PROCEDURE IF EXISTS importar_demonstracoes; -- Adicionado para evitar erro se já existir
 DELIMITER //
-CREATE PROCEDURE IF NOT EXISTS importar_demonstracoes(IN arquivo_path VARCHAR(255), IN ano_ref INT, IN trimestre_ref INT)
+CREATE PROCEDURE importar_demonstracoes(IN arquivo_path VARCHAR(255), IN ano_ref INT, IN trimestre_ref INT)
 BEGIN
 	DECLARE registros_total INT DEFAULT 0;
 	
@@ -105,7 +106,7 @@ BEGIN
 						 INTO TABLE temp_demonstracoes 
 						 FIELDS TERMINATED BY ';' 
 						 ENCLOSED BY '\"' 
-						 LINES TERMINATED BY '\n' 
+						 LINES TERMINATED BY '\\n' 
 						 IGNORE 1 ROWS
 						 (
 							registro_ans, 
@@ -156,11 +157,11 @@ END //
 DELIMITER ;
 
 -- Exemplos de chamadas do procedimento (ajuste conforme os arquivos disponíveis)
--- CALL importar_demonstracoes('/dados_ans/demonstracoes_contabeis/2023/1T2023_demonstracoes.csv', 2023, 1);
--- CALL importar_demonstracoes('/dados_ans/demonstracoes_contabeis/2023/2T2023_demonstracoes.csv', 2023, 2);
--- CALL importar_demonstracoes('/dados_ans/demonstracoes_contabeis/2023/3T2023_demonstracoes.csv', 2023, 3);
--- CALL importar_demonstracoes('/dados_ans/demonstracoes_contabeis/2023/4T2023_demonstracoes.csv', 2023, 4);
--- CALL importar_demonstracoes('/dados_ans/demonstracoes_contabeis/2024/1T2024_demonstracoes.csv', 2024, 1);
+CALL importar_demonstracoes('D:/Documentos/TestesLeo/scripts-automacao/dados_ans/demonstracoes_contabeis/2023/1T2023_demonstracoes.csv', 2023, 1);
+-- CALL importar_demonstracoes('D:/Documentos/TestesLeo/scripts-automacao/dados_ans/demonstracoes_contabeis/2023/2T2023_demonstracoes.csv', 2023, 2);
+-- CALL importar_demonstracoes('D:/Documentos/TestesLeo/scripts-automacao/dados_ans/demonstracoes_contabeis/2023/3T2023_demonstracoes.csv', 2023, 3);
+-- CALL importar_demonstracoes('D:/Documentos/TestesLeo/scripts-automacao/dados_ans/demonstracoes_contabeis/2023/4T2023_demonstracoes.csv', 2023, 4);
+-- CALL importar_demonstracoes('D:/Documentos/TestesLeo/scripts-automacao/dados_ans/demonstracoes_contabeis/2024/1T2024_demonstracoes.csv', 2024, 1);
 
 -- ----------------------------------------
 -- Verificar os dados importados

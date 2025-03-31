@@ -101,7 +101,7 @@ def main():
 	url_demonstracoes = "https://dadosabertos.ans.gov.br/FTP/PDA/demonstracoes_contabeis"
 	
 	# URL para dados cadastrais das operadoras
-	url_operadoras = "https://dadosabertos.ans.gov.br/FTP/PDA/operadoras_de_plano_de_saude_ativas/Relatorio_Cadop.csv"
+	url_operadoras = "https://dadosabertos.ans.gov.br/FTP/PDA/operadoras_de_plano_de_saude_ativas/"
 	
 	# Baixar dados cadastrais das operadoras
 	arquivo_operadoras = os.path.join(diretorio_operadoras, "operadoras_ativas.csv")

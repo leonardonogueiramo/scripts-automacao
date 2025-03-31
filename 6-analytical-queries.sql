@@ -230,15 +230,15 @@ WITH top_operadoras AS (
 		FROM (
 			SELECT 
 				ano, 
-				trimestre,
-				ROW_NUMBER() OVER (ORDER BY ano DESC, trimestre DESC) AS ordem
-			FROM 
-				demonstracoes_contabeis
-			GROUP BY 
-				ano, trimestre
-		) t
-		WHERE ordem = 1
-	)
+			trimestre,
+			ROW_NUMBER() OVER (ORDER BY ano DESC, trimestre DESC) AS ordem
+		FROM 
+			demonstracoes_contabeis
+		GROUP BY 
+			ano, trimestre
+	) t
+	WHERE ordem = 1
+)
 	
 	SELECT 
 		op.registro_ans,
@@ -248,18 +248,18 @@ WITH top_operadoras AS (
 		demonstracoes_contabeis dc
 		JOIN operadoras op ON dc.registro_ans = op.registro_ans
 		JOIN ultimo_trimestre ut ON dc.ano = ut.ano AND dc.trimestre = ut.trimestre
-	WHERE 
-		(
-			dc.codigo_conta = '411111' 
-			OR dc.codigo_conta LIKE '4111%'
-			OR dc.descricao_conta LIKE '%EVENTOS%SINISTROS%ASSISTÊNCIA%SAÚDE MEDICO HOSPITALAR%'
-			OR dc.descricao_conta LIKE '%EVENTOS/SINISTROS CONHECIDOS OU AVISADOS%'
-		)
-	GROUP BY 
-		op.registro_ans, op.razao_social
-	ORDER BY 
-		valor_despesa DESC
-	LIMIT 5
+WHERE 
+	(
+		dc.codigo_conta = '411111' 
+		OR dc.codigo_conta LIKE '4111%'
+		OR dc.descricao_conta LIKE '%EVENTOS%SINISTROS%ASSISTÊNCIA%SAÚDE MEDICO HOSPITALAR%'
+		OR dc.descricao_conta LIKE '%EVENTOS/SINISTROS CONHECIDOS OU AVISADOS%'
+	)
+GROUP BY 
+	op.registro_ans, op.razao_social
+ORDER BY 
+	valor_despesa DESC
+LIMIT 5
 ),
 
 ultimos_trimestres AS (
@@ -328,14 +328,14 @@ SELECT
 	SUM(CASE 
 			WHEN (dc.codigo_conta LIKE '411%' OR dc.descricao_conta LIKE '%EVENTOS%SINISTROS%') 
 			THEN ABS(dc.valor_conta) 
-			ELSE 0 
+		ELSE 0 
 		END) AS despesas_assistenciais,
 	
 	-- Receitas com contraprestações
 	SUM(CASE 
 			WHEN (dc.codigo_conta LIKE '311%' OR dc.descricao_conta LIKE '%CONTRAPRESTAÇÃO%') 
 			THEN ABS(dc.valor_conta) 
-			ELSE 0 
+		ELSE 0 
 		END) AS receitas_contraprestacoes,
 	
 	-- Cálculo da sinistralidade
@@ -343,10 +343,10 @@ SELECT
 		WHEN SUM(CASE WHEN (dc.codigo_conta LIKE '311%' OR dc.descricao_conta LIKE '%CONTRAPRESTAÇÃO%') 
 					  THEN ABS(dc.valor_conta) ELSE 0 END) > 0
 		THEN ROUND(
-				(SUM(CASE WHEN (dc.codigo_conta LIKE '411%' OR dc.descricao_conta LIKE '%EVENTOS%SINISTROS%') 
-						  THEN ABS(dc.valor_conta) ELSE 0 END) /
-				 SUM(CASE WHEN (dc.codigo_conta LIKE '311%' OR dc.descricao_conta LIKE '%CONTRAPRESTAÇÃO%') 
-						  THEN ABS(dc.valor_conta) ELSE 0 END)) * 100, 2
+			(SUM(CASE WHEN (dc.codigo_conta LIKE '411%' OR dc.descricao_conta LIKE '%EVENTOS%SINISTROS%') 
+					  THEN ABS(dc.valor_conta) ELSE 0 END) /
+			 SUM(CASE WHEN (dc.codigo_conta LIKE '311%' OR dc.descricao_conta LIKE '%CONTRAPRESTAÇÃO%') 
+					  THEN ABS(dc.valor_conta) ELSE 0 END)) * 100, 2
 			 )
 		ELSE NULL
 	END AS sinistralidade_percentual

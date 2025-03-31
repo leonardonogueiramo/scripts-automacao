@@ -16,23 +16,6 @@ def criar_diretorio(nome_diretorio):
 	else:
 		print(f"Diretório '{nome_diretorio}' já existe.")
 
-def baixar_anexo_direto(url, destino):
-	"""Baixa o anexo diretamente da URL da ANS."""
-	try:
-		print(f"Tentando baixar o arquivo diretamente de {url}")
-		resposta = requests.get(url, stream=True)
-		resposta.raise_for_status()
-		
-		with open(destino, 'wb') as arquivo:
-			for pedaco in resposta.iter_content(chunk_size=8192):
-				arquivo.write(pedaco)
-		
-		print(f"Arquivo baixado com sucesso para {destino}")
-		return True
-	except Exception as e:
-		print(f"Erro ao baixar o arquivo: {str(e)}")
-		return False
-
 def verificar_pdf_valido(caminho_pdf):
 	"""Verifica se o arquivo PDF é válido."""
 	try:
@@ -48,15 +31,8 @@ def verificar_pdf_valido(caminho_pdf):
 		print(f"Erro ao verificar o arquivo {caminho_pdf}: {str(e)}")
 		return False
 
-def encontrar_ou_baixar_pdf():
-	"""Encontra o PDF do Anexo I ou tenta baixá-lo diretamente do site da ANS."""
-	# Obter diretório atual
-	diretorio_atual = os.getcwd()
-	
-	# Definir diretório de downloads
-	diretorio_downloads = os.path.join(diretorio_atual, "downloads_ans")
-	criar_diretorio(diretorio_downloads)
-	
+def encontrar_ou_baixar_pdf(diretorio_downloads):
+	"""Encontra o PDF do Anexo I no diretório de downloads."""
 	# Verificar se o diretório já tem algum PDF
 	pdf_existente = None
 	if os.path.exists(diretorio_downloads):
@@ -67,43 +43,20 @@ def encontrar_ou_baixar_pdf():
 					pdf_existente = caminho_completo
 					print(f"Encontrado PDF válido existente: {pdf_existente}")
 					break
-	
+
 	if pdf_existente:
 		return pdf_existente
-	
-	# Se não encontrou, tenta baixar diretamente do site
-	print("Nenhum PDF válido encontrado. Tentando baixar diretamente...")
-	
-	# URLs dos anexos I e II
-	# Estas URLs são fictícias e precisam ser substituídas pelas URLs reais dos anexos da ANS
-	urls_anexos = [
-		"https://www.gov.br/ans/pt-br/arquivos/assuntos/participacao-da-sociedade/atualizacao-do-rol/Anexo_I_Rol_2021RN_465.2021_RN473_RN477_RN478_RN480_RN513_RN536_RN537_RN538_RN539_RN541_RN542_RN544_546_547_549_550_551_553.pdf",
-		"https://www.gov.br/ans/pt-br/arquivos/assuntos/participacao-da-sociedade/atualizacao-do-rol/Anexo_II_DUT_2021_RN_465.2021_RN473_RN477_RN478_RN480_RN513_RN536_RN537_RN538_RN539_RN541_RN542_RN544_RN546_547_549_550_551_553.pdf"
-	]
-	
-	# Tentar cada URL
-	for i, url in enumerate(urls_anexos):
-		nome_arquivo = f"Anexo_{i+1}.pdf"
-		caminho_destino = os.path.join(diretorio_downloads, nome_arquivo)
-		
-		if baixar_anexo_direto(url, caminho_destino):
-			if verificar_pdf_valido(caminho_destino):
-				print(f"Arquivo {nome_arquivo} baixado e validado com sucesso.")
-				return caminho_destino
-	
-	# Se ainda não tiver sucesso, criar um arquivo CSV de exemplo
-	print("Não foi possível baixar os PDFs. Criando dados de exemplo...")
-	return criar_dados_exemplo()
 
-def criar_dados_exemplo():
-	"""Cria um arquivo CSV de exemplo com dados simulados do Rol de Procedimentos"""
+	# Se não encontrou, retorna None
+	print("Nenhum PDF válido encontrado no diretório de downloads.")
+	return None
+
+def criar_dados_exemplo(diretorio_dados_ans):
+	"""Cria um arquivo CSV de exemplo com dados simulados do Rol de Procedimentos no diretório dados_ans."""
 	print("Criando dados de exemplo do Rol de Procedimentos...")
 	
-	# Diretório atual
-	diretorio_atual = os.getcwd()
-	
 	# Criar CSV de exemplo
-	csv_path = os.path.join(diretorio_atual, "rol_procedimentos_exemplo.csv")
+	csv_path = os.path.join(diretorio_dados_ans, "rol_procedimentos_exemplo.csv")
 	
 	# Dados de exemplo para o Rol de Procedimentos
 	dados = [
@@ -136,7 +89,7 @@ def criar_dados_exemplo():
 	
 	return csv_path  # Retorna o caminho do arquivo criado
 
-def processar_dados(caminho_arquivo):
+def processar_dados(caminho_arquivo, diretorio_dados_ans):
 	"""Processa os dados do arquivo (PDF ou CSV)"""
 	# Verificar a extensão do arquivo
 	extensao = os.path.splitext(caminho_arquivo)[1].lower()
@@ -152,13 +105,21 @@ def processar_dados(caminho_arquivo):
 				numero_paginas = len(pdf.pages)
 				print(f"O PDF tem {numero_paginas} páginas.")
 				
-				# Extrair tabelas da primeira página como teste
-				pagina = pdf.pages[0]
-				tabelas = pagina.extract_tables()
+				# Extrair tabelas de todas as páginas
+				all_tables = []
+				for i in range(len(pdf.pages)):
+					pagina = pdf.pages[i]
+					tabelas = pagina.extract_tables()
+					if tabelas:
+						print(f"Encontradas {len(tabelas)} tabelas na página {i+1}.")
+						all_tables.extend(tabelas)
+					else:
+						print(f"Nenhuma tabela encontrada na página {i+1}.")
 				
-				if tabelas:
-					print(f"Foram encontradas {len(tabelas)} tabelas na primeira página.")
-					return processar_tabelas_pdf(pdf)
+				if all_tables:
+					print(f"Total de tabelas encontradas: {len(all_tables)}.")
+					df = processar_tabelas_pdf(all_tables)
+					return salvar_e_retornar_dataframe(df, diretorio_dados_ans)
 				else:
 					print("Não foram encontradas tabelas no PDF.")
 					return None
@@ -175,7 +136,7 @@ def processar_dados(caminho_arquivo):
 			print(f"Carregando dados do CSV: {caminho_arquivo}")
 			df = pd.read_csv(caminho_arquivo, encoding='utf-8-sig')
 			print(f"CSV carregado com sucesso. Dimensões: {df.shape}")
-			return df
+			return salvar_e_retornar_dataframe(df, diretorio_dados_ans)
 		except Exception as e:
 			print(f"Erro ao carregar o CSV: {str(e)}")
 			return None
@@ -184,31 +145,9 @@ def processar_dados(caminho_arquivo):
 		print(f"Formato de arquivo não suportado: {extensao}")
 		return None
 
-def processar_tabelas_pdf(pdf):
-	"""Extrai e processa todas as tabelas do PDF."""
+def processar_tabelas_pdf(all_tables):
+	"""Processa todas as tabelas extraídas do PDF."""
 	try:
-		all_tables = []
-		
-		for num_pagina, pagina in enumerate(pdf.pages, 1):
-			print(f"Processando página {num_pagina}/{len(pdf.pages)}...")
-			
-			# Extrair tabelas da página
-			tabelas = pagina.extract_tables()
-			
-			for tabela in tabelas:
-				if tabela:  # Verificar se a tabela não está vazia
-					# Verificar se parece ser a tabela do Rol
-					headers = tabela[0]
-					header_text = ' '.join([str(h).lower() for h in headers if h is not None])
-					
-					if any(termo in header_text for termo in ['procedimento', 'evento', 'código', 'amb', 'od']):
-						print(f"Tabela relevante encontrada na página {num_pagina}")
-						all_tables.append(tabela)
-		
-		if not all_tables:
-			print("Nenhuma tabela relevante encontrada no PDF.")
-			return None
-		
 		# Processar as tabelas para criar um DataFrame
 		# Identificar os cabeçalhos (primeira linha da primeira tabela)
 		headers = [str(h).strip() if h is not None else "" for h in all_tables[0][0]]
@@ -301,6 +240,21 @@ def substituir_abreviacoes(df):
 		print(f"Erro ao substituir abreviações: {str(e)}")
 		return df
 
+def salvar_e_retornar_dataframe(df, diretorio_dados_ans):
+	"""Salva o DataFrame como CSV e retorna o DataFrame."""
+	# Substituir abreviações
+	df = substituir_abreviacoes(df)
+	
+	print(f"DataFrame processado com sucesso. Dimensões: {df.shape}")
+	
+	# Salvar DataFrame como CSV
+	seu_nome = "Leo"  # Substitua pelo seu nome
+	csv_path = os.path.join(diretorio_dados_ans, "rol_procedimentos.csv")
+	df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+	print(f"Dados salvos no arquivo CSV: {csv_path}")
+	
+	return df
+
 def comprimir_arquivo(caminho_arquivo, nome_zip):
 	"""Comprime um arquivo em um ZIP."""
 	try:
@@ -320,31 +274,34 @@ def main():
 		diretorio_atual = os.getcwd()
 		print(f"Diretório atual: {diretorio_atual}")
 		
+		# Definir diretórios
+		diretorio_downloads = os.path.join(diretorio_atual, "downloads_ans")
+		diretorio_dados_ans = os.path.join(diretorio_atual, "dados_ans")
+		
+		# Criar diretórios
+		criar_diretorio(diretorio_downloads)
+		criar_diretorio(diretorio_dados_ans)
+		
 		# Encontrar ou baixar o PDF
-		arquivo_fonte = encontrar_ou_baixar_pdf()
+		arquivo_fonte = encontrar_ou_baixar_pdf(diretorio_downloads)
 		if not arquivo_fonte:
 			print("Não foi possível obter uma fonte de dados válida.")
-			return
+			arquivo_fonte = criar_dados_exemplo(diretorio_dados_ans)
+			
+			if not arquivo_fonte:
+				print("Não foi possível criar dados de exemplo.")
+				return
 		
 		# Processar os dados
-		df = processar_dados(arquivo_fonte)
+		df = processar_dados(arquivo_fonte, diretorio_dados_ans)
 		if df is None or df.empty:
 			print("Não foi possível processar os dados.")
 			return
 		
-		# Substituir abreviações
-		df = substituir_abreviacoes(df)
-		
-		print(f"DataFrame processado com sucesso. Dimensões: {df.shape}")
-		
-		# Salvar DataFrame como CSV
-		seu_nome = "Leo"  # Substitua pelo seu nome
-		csv_path = os.path.join(diretorio_atual, "rol_procedimentos.csv")
-		df.to_csv(csv_path, index=False, encoding='utf-8-sig')
-		print(f"Dados salvos no arquivo CSV: {csv_path}")
-		
 		# Compactar o CSV
-		zip_path = os.path.join(diretorio_atual, f"Teste_{seu_nome}.zip")
+		seu_nome = "Leo"  # Substitua pelo seu nome
+		csv_path = os.path.join(diretorio_dados_ans, "rol_procedimentos.csv")
+		zip_path = os.path.join(diretorio_dados_ans, f"Teste_{seu_nome}.zip")
 		if comprimir_arquivo(csv_path, zip_path):
 			print(f"Processo concluído. Arquivo ZIP criado: {zip_path}")
 		else:
