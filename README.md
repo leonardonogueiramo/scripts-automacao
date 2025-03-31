@@ -15,9 +15,10 @@ Este projeto contém a implementação de quatro etapas de uma automação:
 - `4-create-tables-mysql.sql`: Script SQL para criar as tabelas no MySQL
 - `5-import-data-mysql.sql`: Script SQL para importar os dados para o MySQL
 - `6-analytical-queries.sql`: Consultas analíticas para responder as perguntas do teste
-- `7-api-server.py`: Servidor API em Flask para consultas de operadoras
-- `8-frontend/`: Pasta contendo a interface web em Vue.js
-- `9-postman-collection.json`: Coleção Postman para testar a API
+- `7-execute-scripts-database.py`: Executar scripts de banco de dados
+- `8-api-server.py`: Servidor API em Flask para consultas de operadoras
+- `9-frontend/`: Pasta contendo a interface web em Vue.js
+- `10-postman-collection.json`: Coleção Postman para testar a API
 
 ## Requisitos
 
